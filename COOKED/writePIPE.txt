@@ -1,0 +1,159 @@
+========================================
+WRITING INTO A PIPE (ASCII NOTES)
+========================================
+
+1) What happens when we write into a pipe?
+------------------------------------------
+A pipe connects two processes:
+
+   [ Writer Process ] --(pipe)--> [ Reader Process ]
+
+- The writer sends BYTES into the pipe
+- The reader receives the same BYTES in order
+- Pipes do NOT understand strings or lines
+
+
+2) Standard Output (FD 1)
+-------------------------
+In Unix / xv6:
+- FD 0 = Standard Input  (stdin)
+- FD 1 = Standard Output (stdout)
+- FD 2 = Standard Error
+
+Normally:
+   write(1, ...) -> prints to terminal
+
+With a pipe:
+   writer hello | reader
+
+The shell:
+- redirects FD 1 of `writer`
+- into the pipe’s write end
+- so write(1, ...) writes INTO the pipe
+
+
+3) The write() system call
+--------------------------
+Syntax:
+
+   int write(int fd, void *buf, int n);
+
+Meaning:
+- fd   : file descriptor (1 = stdout)
+- buf  : memory containing bytes to send
+- n    : number of bytes to write
+
+Return value:
+- > 0  : number of bytes written
+- < 0  : error
+
+
+4) Writing ASCII text
+---------------------
+ASCII text is just a sequence of BYTES.
+
+Example:
+   "hello"
+
+Memory view:
+   h  e  l  l  o
+  68 65 6c 6c 6f   (hex)
+
+write() sends EXACTLY the bytes you specify.
+It does NOT:
+- add '\0'
+- add '\n'
+- detect word boundaries
+
+
+5) Writing a word into a pipe
+-----------------------------
+Given:
+
+   char *word = argv[1];
+   int n = strlen(word);
+
+Call:
+
+   write(1, word, n);
+
+Effect:
+- Writes each character byte-by-byte into the pipe
+- No null terminator is sent
+- Reader must reconstruct text manually
+
+
+6) Why write a newline?
+-----------------------
+Pipes do not define "lines".
+
+Adding:
+   write(1, "\n", 1);
+
+Purpose:
+- Acts as a SEPARATOR
+- Allows the reader to detect end-of-word or end-of-line
+- Similar to pressing ENTER in a terminal
+
+
+7) Example data flow
+--------------------
+Command:
+   writer hello | reader
+
+Bytes sent into pipe:
+   h e l l o \n
+
+Reader receives:
+   read(0, &c, 1) -> 'h'
+   read(0, &c, 1) -> 'e'
+   ...
+   read(0, &c, 1) -> '\n'
+
+
+8) End of pipe
+--------------
+When the writer process exits:
+- The pipe’s write end closes
+- The reader’s read() returns 0
+- Reader knows no more data is coming
+
+
+9) Key takeaway
+----------------
+- write() sends RAW BYTES
+- Pipes do not know about strings
+- Newlines and spaces are conventions
+- Reader and writer must agree on format
+
+========================================
+
+
+========================================
+SAMPLE CODE
+========================================
+#include "kernel/types.h"
+#include "user/user.h"
+
+int main(int argc, char *argv[]) {
+  // Check if the user gave us a word to write
+  if(argc < 2){
+    printf("Usage: writer <word>\n");
+    exit(1);
+  }
+
+  char *word = argv[1];
+  
+  // 1. Find the length of the word manually or use strlen
+  int n = strlen(word);
+
+  // 2. Use the WRITE system call
+  // FD 1 is Standard Output. 
+  // If we use a pipe ( | ), the Shell redirects FD 1 to the pipe's entrance.
+  write(1, word, n);
+
+  // 3. Write a newline so the receiver knows the line ended
+  write(1, "\n", 1);
+
+  exit(0);
+}
