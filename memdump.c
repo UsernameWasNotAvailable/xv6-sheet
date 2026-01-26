@@ -57,60 +57,40 @@ main(int argc, char *argv[])
   exit(0);
 }
 
-void
-memdump(char *fmt, char *data)
-{
-    // Initialize a cursor (ptr) to track our current position in the raw memory block
-    char *ptr = data;	
+void memdump(char *fmt, char *data) {
+  char *ptr = data;                               // Initialize cursor at the start of data
 
-    // Loop through the format string until we hit the null terminator '\0'
-    for(int i = 0; fmt[i] != '\0'; i++)
-    {
-        char c = fmt[i]; // Get the current "instruction" (e.g., 'i', 's', 'c')
+  for(int i = 0; fmt[i] != '\0'; i++) {           // Loop through each format instruction
+    char c = fmt[i];                              // Get current rule (e.g., 'i', 'h', 's')
 
-        if(c == 'i') // 'i' for Integer (4 bytes)
-        {
-            // (int*)ptr: Tells the CPU to treat the address at ptr as an integer
-            // *(int*)ptr: The outer star "grabs" the 4-byte value from that address
-            int value = *(int*)ptr;
-            printf("%d\n", value);
-            ptr += sizeof(int); // Move the cursor 4 bytes forward
+    if(c == 'i') {                                // --- CASE: INTEGER ---
+      int value = *(int*)ptr;                     // Cast to int* (4 bytes) and grab value
+      printf("%d\n", value);                      // Print as signed decimal
+      ptr += sizeof(int);                         // Move cursor forward 4 bytes
 
-        } else if(c == 'h') // 'h' for Short Integer (2 bytes)
-        {
-            // Cast to short* and dereference to grab 2 bytes
-            short value = *(short*)ptr;
-            printf("%d\n", value);
-            ptr += sizeof(short); // Move the cursor 2 bytes forward
+    } else if(c == 'h') {                         // --- CASE: SHORT ---
+      short value = *(short*)ptr;                 // Cast to short* (2 bytes) and grab value
+      printf("%d\n", value);                      // Print as decimal
+      ptr += sizeof(short);                       // Move cursor forward 2 bytes
 
-        } else if (c =='c') // 'c' for Character (1 byte)
-        {
-            // Since ptr is already a char*, we just dereference it directly
-            char value = *ptr;
-            printf("%c\n", value);
-            ptr += 1; // Move the cursor 1 byte forward
+    } else if (c =='c') {                         // --- CASE: CHARACTER ---
+      char value = *ptr;                          // Grab exactly 1 byte from current spot
+      printf("%c\n", value);                      // Print as ASCII character
+      ptr += 1;                                   // Move cursor forward 1 byte
 
-        } else if (c=='s') // 's' for Pointer to a String (8 bytes on 64-bit)
-        {
-            // *(char**)ptr: Treats the memory at ptr as an 8-byte ADDRESS (pointer)
-            // It grabs that address and stores it in 'value'
-            char *value = *(char**)ptr;
-            printf("%s\n", value); // printf follows that address to find the text
-            ptr += sizeof(char*); // Move cursor by the size of a pointer (8 bytes)
+    } else if (c=='s') {                          // --- CASE: STRING POINTER ---
+      char *value = *(char**)ptr;                 // Grab 8-byte ADDRESS stored at ptr
+      printf("%s\n", value);                      // Print string found at THAT address
+      ptr += sizeof(char*);                       // Move cursor forward 8 bytes
 
-        } else if (c=='S') // 'S' for Inline String
-        {
-            // Unlike 's', the text is sitting DIRECTLY at the current ptr
-            printf("%s\n", ptr);
-            // Move cursor past the string AND its null terminator (+1)
-            ptr += strlen(ptr) + 1;
+    } else if (c=='S') {                          // --- CASE: INLINE STRING ---
+      printf("%s\n", ptr);                        // Print text sitting directly at ptr
+      ptr += strlen(ptr) + 1;                     // Move past string length + null char
 
-        } else if (c=='p') // 'p' for Hexadecimal Pointer/Address (8 bytes)
-        {
-            // Cast to unsigned long to ensure we grab the full 8-byte address
-            unsigned long value  = *(unsigned long*)ptr;
-            printf("%lx\n", value); // Print as hexadecimal
-            ptr += sizeof(char*); // Move the cursor 8 bytes forward
-        }
+    } else if (c=='p') {                          // --- CASE: HEX/POINTER ---
+      unsigned long value = *(unsigned long*)ptr; // Grab 8 bytes as a large number
+      printf("%lx\n", value);                     // Print as Hexadecimal (long hex)
+      ptr += sizeof(char*);                       // Move cursor forward 8 bytes
     }
+  }
 }
