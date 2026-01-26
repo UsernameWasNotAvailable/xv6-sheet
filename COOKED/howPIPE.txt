@@ -1,0 +1,178 @@
+========================================
+READING FROM A PIPE (ASCII NOTES)
+========================================
+
+1) What is a pipe?
+------------------
+A pipe is a unidirectional communication channel.
+
+   [ Process A ] ----(pipe)----> [ Process B ]
+
+- Process A writes bytes into the pipe
+- Process B reads bytes from the pipe
+- Pipes transmit RAW BYTES (not strings, not lines)
+
+
+2) How a program reads from a pipe
+----------------------------------
+In xv6 / Unix:
+- A pipe appears as a FILE DESCRIPTOR
+- Standard input (FD 0) can be redirected to a pipe
+
+Example:
+   echo "hello world" | myprogram
+
+Here:
+- "echo" writes into the pipe
+- "myprogram" reads from FD 0
+
+
+3) The read() system call
+-------------------------
+Syntax:
+
+   int read(int fd, void *buf, int n);
+
+Meaning:
+- fd   : file descriptor (0 = stdin)
+- buf  : memory to store bytes
+- n    : max number of bytes to read
+
+Return value:
+- > 0  : number of bytes read
+- 0    : end-of-file (pipe closed)
+- < 0  : error
+
+
+4) Reading ASCII text from a pipe
+---------------------------------
+ASCII text is just BYTES.
+
+Each character is read as:
+- 1 byte
+- stored in a char variable
+
+Example loop:
+
+   char c;
+   while (read(0, &c, 1) > 0) {
+       // c now holds ONE ASCII character
+   }
+
+Important:
+- read() does NOT add '\0'
+- read() does NOT know about words or lines
+- read() only gives raw bytes
+
+
+5) Reconstructing words manually
+---------------------------------
+Because pipes give raw bytes:
+- The program must decide what a "word" is
+
+Common separators:
+- space  ' '
+- tab    '\t'
+- newline '\n'
+
+Strategy:
+- Read 1 character at a time
+- If character is NOT a separator:
+    -> append to buffer
+- If character IS a separator:
+    -> terminate buffer with '\0'
+    -> process the word
+    -> reset buffer
+
+
+6) Example reconstruction logic
+--------------------------------
+   char buf[512];
+   int m = 0;
+
+   if (c is normal character):
+       buf[m++] = c;
+
+   if (c is separator):
+       buf[m] = '\0';   // turn bytes into a string
+       use buf
+       m = 0;           // reset for next word
+
+
+7) End-of-pipe handling
+-----------------------
+When the writer closes the pipe:
+- read() returns 0
+- loop exits
+
+If buffer still has data:
+- it must be printed manually
+
+   if (m > 0):
+       buf[m] = '\0'
+       process last word
+
+
+8) Key takeaway
+----------------
+- Pipes transmit bytes, not strings
+- read() works at the byte level
+- Programs must:
+    * group bytes
+    * detect separators
+    * add '\0' manually
+    * define their own text logic
+
+========================================
+
+
+
+
+===============================================
+SAMPLE CODE:
+===============================================
+
+#include "kernel/types.h"
+#include "user/user.h"
+
+int main(int argc, char *argv[]) {
+  char c;
+  char construction_buf[512]; // The temporary buffer
+  int m = 0;
+  char *separators = " \t\n";  // Space, Tab, Newline
+
+  // 1. Check for the static argument (the "bye" in "copy bye") for insatce onelt
+  char *static_arg = (argc > 1) ? argv[1] : "";
+
+  // 2. Read from the pipe (FD 0)
+  while (read(0, &c, 1) > 0) {
+    
+    // Check if the character is a separator
+    if (strchr(separators, c)) {
+      if (m == 0) continue; // Skip extra spaces
+
+      construction_buf[m] = 0; // RECONSTRUCTION: Turn bricks into a String !!!!
+      
+      // We found a full word! Let's print it with the static argument static argument is the copu <static argument for fun>
+      printf("%s %s\n", static_arg, construction_buf);
+
+      m = 0; // FLUSH: Reset the mixing bowl for the next word
+    } 
+    else {
+      // If it's not a space, add it to our building site
+      if (m < 511) {
+        construction_buf[m++] = c; 
+      }
+    }
+  }
+
+  // 3. Handle the very last word if the pipe ends without a newline
+  if (m > 0) {
+    construction_buf[m] = 0;
+    printf("%s %s\n", static_arg, construction_buf);
+  }
+
+  exit(0);
+}
+
+
