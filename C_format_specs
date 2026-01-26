@@ -1,0 +1,22 @@
++----------+--------------------+--------------------------------+----------------------+-------------------------------------------+
+| Notation | Data Type          | Description                    | Example Usage        | Size & Range                              |
++----------+--------------------+--------------------------------+----------------------+-------------------------------------------+
+| %d / %i  | int                | Signed decimal integer         | printf("%d", 42);    | 4B; -2,147,483,648 to 2,147,483,647       |
+| %u       | unsigned int       | Unsigned decimal integer       | printf("%u", 42);    | 4B; 0 to 4,294,967,295                    |
+| %ld      | long int           | Signed long integer            | printf("%ld", 123L); | 4B; -2,147,483,648 to 2,147,483,647       |
+| %lu      | unsigned long int  | Unsigned long integer          | printf("%lu", 123UL);| 4B; 0 to 4,294,967,295                    |
+| %lld     | long long int      | Signed long long integer       | printf("%lld", 12LL);| 8B; -(2^63) to (2^63)-1                   |
+| %llu     | unsigned long long | Unsigned long long integer     | printf("%llu", 12ULL)| 8B; 0 to 18,446,744,073,709,551,615       |
+| %f       | float              | Decimal floating-point         | printf("%f", 3.14);  | 4B; 1.2E-38 to 3.4E+38                    |
+| %lf      | double             | Double-precision float         | printf("%lf", 3.141);| 8B; 1.7E-308 to 1.7E+308                  |
+| %Lf      | long double        | Extended-precision float       | printf("%Lf", 3.14L);| 10-16B; 3.4E-4932 to 1.1E+4932            |
+| %e / %E  | float/double       | Scientific notation            | printf("%e", 123.4); | 4/8B; depends on type                     |
+| %g / %G  | float/double       | Shorter of %f or %e            | printf("%g", 123.4); | 4/8B; depends on type                     |
+| %x       | unsigned int       | Hexadecimal (lowercase)        | printf("%x", 255);   | 4B; 0 to 4,294,967,295                    |
+| %X       | unsigned int       | Hexadecimal (uppercase)        | printf("%X", 255);   | 4B; 0 to 4,294,967,295                    |
+| %o       | unsigned int       | Octal integer                  | printf("%o", 255);   | 4B; 0 to 4,294,967,295                    |
+| %c       | char               | Single character               | printf("%c", 'A');   | 1B; -128 to 127 or 0 to 255               |
+| %s       | char[]             | String of characters           | printf("%s", "Hi");  | N/A; up to null terminator (\0)           |
+| %p       | void* 		          | Pointer address                | printf("%p", ptr);   | 4/8B; system dependent                    |
+| %%       | N/A                | Literal percent sign           | printf("%%");        | N/A                                       |
++----------+--------------------+--------------------------------+----------------------+-------------------------------------------+
