@@ -1,0 +1,57 @@
+============================================================
+           XV6 SYSTEM CALL IMPLEMENTATION GUIDE
+============================================================
+
+STEP 1: USER-SPACE INTERFACE
+------------------------------------------------------------
+1. /user/user.h
+   Add the function prototype so user apps can see it.
+   Example: int yourcall(int);
+
+2. /user/usys.pl
+   Add an entry point to generate the assembly trap.
+   Example: entry("yourcall");
+
+STEP 2: KERNEL-SPACE REGISTRATION
+------------------------------------------------------------
+3. /kernel/syscall.h
+   Assign a unique system call number.
+   Example: #define SYS_yourcall 23
+
+4. /kernel/syscall.c
+   - Add: extern uint64 sys_yourcall(void);
+   - Add to the syscalls[] array: [SYS_yourcall] sys_yourcall,
+
+5. /kernel/defs.h
+   (Optional) If your syscall calls functions in other kernel
+   files (like proc.c or trap.c), add those prototypes here.
+
+STEP 3: KERNEL-SPACE LOGIC
+------------------------------------------------------------
+6. /kernel/sysproc.c (or sysfile.c)
+   Write the actual implementation here.
+   Example:
+   uint64 
+   sys_yourcall(void) {
+     // Use argint() or argaddr() to get arguments
+     // Write your logic here
+     return 0;
+   }
+
+STEP 4: COMPILATION & TESTING
+------------------------------------------------------------
+7. /user/<filename>.c
+   Create your user test program (e.g., testcall.c).
+
+8. Makefile
+   Add your test program to the UPROGS section:
+   UPROGS=\
+     $U/_testcall\
+
+9. RUN:
+   $ make clean
+   $ make qemu
+
+============================================================
+              "Remember: Flow = User -> Trap -> Kernel"
+============================================================
