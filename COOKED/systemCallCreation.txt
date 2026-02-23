@@ -1,26 +1,40 @@
 ============================================================
            XV6 SYSTEM CALL IMPLEMENTATION GUIDE
 ============================================================
-
+#define SYS_endianswap 22  // Use the next available number
 STEP 1: USER-SPACE INTERFACE
 ------------------------------------------------------------
 1. /user/user.h
    Add the function prototype so user apps can see it.
    Example: int yourcall(int);
+   int endianswap(uint);
+
 
 2. /user/usys.pl
    Add an entry point to generate the assembly trap.
    Example: entry("yourcall");
+   entry("endianswap");
 
 STEP 2: KERNEL-SPACE REGISTRATION
 ------------------------------------------------------------
-3. /kernel/syscall.h
+3. /kernel/syscall.h DONE
    Assign a unique system call number.
    Example: #define SYS_yourcall 23
 
 4. /kernel/syscall.c
    - Add: extern uint64 sys_yourcall(void);
    - Add to the syscalls[] array: [SYS_yourcall] sys_yourcall,
+
+
+// Add this prototype
+extern uint64 sys_endianswap(void);
+
+// Add to the static array [SYS_...]
+static uint64 (*syscalls[])(void) = {
+...
+[SYS_endianswap]   sys_endianswap,
+};
+
 
 5. /kernel/defs.h
    (Optional) If your syscall calls functions in other kernel
@@ -37,6 +51,22 @@ STEP 3: KERNEL-SPACE LOGIC
      // Write your logic here
      return 0;
    }
+
+uint64
+sys_endianswap(void)
+{
+  uint val; // 32-bit value to swap
+  // Retrieve the first integer argument
+  argint(0, (int*)&val); // cast to int* cuz argint expect int*
+
+  // Perform the 32-bit swap logic
+  uint b0 = (val & 0x000000FF) << 24;
+  uint b1 = (val & 0x0000FF00) << 8;
+  uint b2 = (val & 0x00FF0000) >> 8;
+  uint b3 = (val & 0xFF000000) >> 24;
+
+  return b0 | b1 | b2 | b3;
+}
 
 STEP 4: COMPILATION & TESTING
 ------------------------------------------------------------
