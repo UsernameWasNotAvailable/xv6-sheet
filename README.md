@@ -4,3 +4,4 @@
 - https://github.com/Lanssi/xv6-labs-2023/tree/util
 - https://github.com/miaochenlu/xv6Labs?tab=readme-ov-file
 - https://jjeongsu.tistory.com/category/xv6%3A2024/Chapter%201
+- https://cs326-s25.cs.usfca.edu/assignments/project1
