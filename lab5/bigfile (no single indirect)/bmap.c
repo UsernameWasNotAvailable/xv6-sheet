@@ -1,3 +1,5 @@
+//If the exam asks you to drop the singly-indirect block to save array space, ip->addrs[11] becomes the Doubly-Indirect Master Map directly. You completely remove the singly-indirect if statement.
+
 static uint
 bmap(struct inode *ip, uint bn)
 {
