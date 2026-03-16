@@ -1,23 +1,73 @@
 1. kernel/syscall.h
 Add the system call number:
 
-#define SYS_symlink 22 -----
+// ... existing system call definitions ...
+#define SYS_mkdir  20
+#define SYS_close  21
+// ---------------------------------------------------------
+// -> EXAM ADDITION HERE: THE SYSCALL NUMBER <-
+// Use the next available integer in the list.
+// ---------------------------------------------------------
+#define SYS_symlink 22
 
 2. kernel/syscall.c
 Hook the handler to the system call table:
 
+extern uint64 sys_wait(void);
+extern uint64 sys_write(void);
+extern uint64 sys_uptime(void);
+// ---------------------------------------------------------
+// -> EXAM ADDITION HERE: THE EXTERN DECLARATION <-
+// ---------------------------------------------------------
 extern uint64 sys_symlink(void);
 
 static uint64 (*syscalls[])(void) = {
-...
-[SYS_symlink] sys_symlink, -----
+[SYS_fork]    sys_fork,
+[SYS_exit]    sys_exit,
+[SYS_wait]    sys_wait,
+[SYS_pipe]    sys_pipe,
+[SYS_read]    sys_read,
+// ... other syscalls ...
+[SYS_mkdir]   sys_mkdir,
+[SYS_close]   sys_close,
+// ---------------------------------------------------------
+// -> EXAM ADDITION HERE: THE ARRAY ENTRY <-
+// ---------------------------------------------------------
+[SYS_symlink] sys_symlink,
 };
 
-user/usys.pl & user/user.h
-Add the entry point for the user-space stub and the function prototype:
+3. user/usys.pl
+// system calls
+int fork(void);
+int exit(int) __attribute__((noreturn));
+int wait(int*);
+int pipe(int*);
+int write(int, const void*, int);
+int read(int, void*, int);
+int close(int);
+// ... other syscalls ...
+int sleep(int);
+int uptime(void);
+// ---------------------------------------------------------
+// -> EXAM ADDITION HERE: THE USER PROTOTYPE <-
+// ---------------------------------------------------------
+int symlink(const char*, const char*);
 
-// user.h
-int symlink(const char*, const char*); -----
 
-// usys.pl
-entry("symlink"); -----
+
+4. user/user.h
+entry("fork");
+entry("exit");
+entry("wait");
+entry("pipe");
+entry("read");
+entry("write");
+entry("close");
+# ... other syscalls ...
+entry("sleep");
+entry("uptime");
+# ---------------------------------------------------------
+# -> EXAM ADDITION HERE: THE ASSEMBLY STUB GENERATOR <-
+# ---------------------------------------------------------
+entry("symlink");
+
