@@ -1,4 +1,5 @@
 // implement this
+// WARNING IDK ABOUT THIS TOOO
 
 uint64
 sys_symlink(void)
