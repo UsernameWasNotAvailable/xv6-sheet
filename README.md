@@ -8,3 +8,10 @@
 - https://xiayingp.gitbook.io/build_a_os/labs/untitled
 
 - https://pdos.csail.mit.edu/6.S081/2021/xv6/book-riscv-rev2.pdf
+
+- needed for quiz 4:
+- https://xiayingp.gitbook.io/build_a_os/labs/untitled
+-  https://github.com/Lanssi/xv6-labs-2023/tree/util
+-  https://github.com/zarif98sjs/xv6-memory-management-walkthrough
+-  https://github.com/miaochenlu/xv6Labs?tab=readme-ov-file
+-  https://github.com/yaruwangway/6.S081/tree/master
